@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep Evo Agent UI-only until backend workflows are explicitly requested; this preserves the PRD's current implementation phase.
+- Use a mobile-first, Replit-inspired workspace shell with semantic charcoal/amber tokens; this matches the approved product direction.
