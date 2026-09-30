@@ -224,7 +224,9 @@ function MobileDrawer({ close, setWorkspace, goHome }: { close: () => void; setW
   const togglePin = (name: string) => setPinned((p) => (p.includes(name) ? p.filter((n) => n !== name) : [...p, name]));
 
   return <div className="drawer-backdrop" onClick={close}><aside className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
-    <div className="drawer-head"><button className="bare" onClick={() => go("/dashboard")} aria-label="Dashboard"><BrandMark compact /></button><div><button className="bare" aria-label="Search projects" onClick={() => setSearch(search === null ? "" : null)}><Search /></button><button className="bare" aria-label="Close sidebar" onClick={close}><PanelLeft /></button></div></div>
+    {search === null
+      ? <div className="drawer-head"><button className="bare" onClick={() => go("/dashboard")} aria-label="Dashboard"><BrandMark compact /></button><div><button className="bare" aria-label="Search projects" onClick={() => setSearch("")}><Search /></button><button className="bare" aria-label="Close sidebar" onClick={close}><PanelLeft /></button></div></div>
+      : <div className="drawer-head drawer-head-search"><Search /><input autoFocus className="drawer-search" placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)} /><button className="bare" aria-label="Close search" onClick={() => setSearch(null)}><X /></button></div>}
     <div className="ws-wrap">
       <button className="workspace-pill" onClick={() => setWsOpen(!wsOpen)} aria-expanded={wsOpen}><span>{ws === workspaces[0] ? "TK" : "TM"}</span> {ws} <ChevronDown /></button>
       {wsOpen && <div className="drawer-menu">{workspaces.map((w) => <button key={w} onClick={() => { setWs(w); setWsOpen(false); }}>{w}{w === ws && <span className="model-check">✓</span>}</button>)}</div>}
