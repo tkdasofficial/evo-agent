@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowUp,
+  BarChart3,
   Bot,
   Boxes,
   BrainCircuit,
@@ -11,15 +12,19 @@ import {
   Code2,
   Database,
   FileCode2,
+  FileSpreadsheet,
   FolderGit2,
   Gauge,
   Globe2,
   Import,
   Layers3,
+  Lightbulb,
   Library,
   Menu,
   Mic,
   MoreHorizontal,
+  Pin,
+  Presentation,
   PanelLeft,
   Plus,
   Search,
@@ -99,7 +104,7 @@ function EvoAgent() {
       </aside>
 
       <div className="main-frame">
-        <header className="topbar">
+        <header className={`topbar ${workspace ? "workspace-topbar" : "home-topbar"}`}>
           <button className="icon-button mobile-only" onClick={() => setDrawer(true)} aria-label="Open navigation"><Menu /></button>
           <div className="project-switcher"><BrandMark compact /><span>{workspace ? "Hyper Copilot" : "Evo Agent"}</span><ChevronDown /></div>
           <div className="command-search"><Search /><span>Search projects and commands</span><kbd>⌘ K</kbd></div>
@@ -109,7 +114,7 @@ function EvoAgent() {
         {workspace ? (
           <Workspace running={running} toolView={toolView} prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} setToolView={setToolView} />
         ) : (
-          <Home setWorkspace={setWorkspace} prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} />
+          <Home setWorkspace={setWorkspace} openDrawer={() => setDrawer(true)} prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} />
         )}
       </div>
 
@@ -118,27 +123,27 @@ function EvoAgent() {
   );
 }
 
-function Home({ setWorkspace, prompt, setPrompt, beginTask }: { setWorkspace: (v: boolean) => void; prompt: string; setPrompt: (v: string) => void; beginTask: () => void }) {
+function Home({ setWorkspace, openDrawer, prompt, setPrompt, beginTask }: { setWorkspace: (v: boolean) => void; openDrawer: () => void; prompt: string; setPrompt: (v: string) => void; beginTask: () => void }) {
   return (
     <main className="home-page">
       <div className="home-inner">
+        <div className="dashboard-mobile-head"><button onClick={openDrawer} aria-label="Open sidebar"><PanelLeft /></button><Lightbulb /></div>
         <div className="eyebrow"><span className="live-dot" /> SYSTEM READY <span>v1.0</span></div>
-        <h1>What will we build today?</h1>
-        <p className="lead">Describe an idea, fix a bug, or continue where you left off.</p>
+        <h1>What are we working<br />on today?</h1>
         <section className="jump-card" onClick={() => setWorkspace(true)}>
           <div className="jump-head"><span>Jump back in</span><ChevronRight /></div>
           <div className="project-preview">
-            <div className="preview-top"><span className="preview-dot" /><span>hyper-copilot</span><small>main</small></div>
-            <div className="preview-content"><div className="code-lines"><i /><i /><i /><i /></div><div className="preview-window"><span>Preview ready</span><b>Launch</b></div></div>
+            <i className="project-sheet sheet-left" /><i className="project-sheet sheet-back" /><i className="project-sheet sheet-front"><span><FolderGit2 /></span></i>
           </div>
         </section>
         <div className="idea-list">
-          <button onClick={() => setPrompt("Build an analytics dashboard from my product data")}><Gauge className="blue" /> Build an analytics dashboard <ArrowUp /></button>
-          <button onClick={() => setPrompt("Create and secure an API for my app")}><SquareTerminal className="green" /> Create a production API <ArrowUp /></button>
-          <button onClick={() => setPrompt("Find and fix issues in my project")}><Sparkles className="orange" /> Find and fix project issues <ArrowUp /></button>
+          <button onClick={() => setPrompt("Turn my notes into slides")}><Presentation className="coral" /> Turn my notes into slides</button>
+          <button onClick={() => setPrompt("Analyze a Google Sheet")}><FileSpreadsheet className="green" /> Analyze a Google Sheet</button>
+          <button onClick={() => setPrompt("Find three directions")}><Sparkles className="orange" /> Find three directions</button>
+          <button onClick={() => setPrompt("Turn a sheet into a dashboard")}><BarChart3 className="blue" /> Turn a sheet into a dashboard</button>
         </div>
       </div>
-      <Composer prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} placeholder="Describe what you want to build..." />
+      <Composer prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} placeholder="Start chatting or describe a task..." />
     </main>
   );
 }
@@ -177,5 +182,6 @@ function Composer({ prompt, setPrompt, beginTask, placeholder, compact = false }
 }
 
 function MobileDrawer({ close, setWorkspace }: { close: () => void; setWorkspace: () => void }) {
-  return <div className="drawer-backdrop" onClick={close}><aside className="mobile-drawer" onClick={(e) => e.stopPropagation()}><div className="drawer-head"><BrandMark /><button className="icon-button" onClick={close} aria-label="Close navigation"><X /></button></div><button className="workspace-pill"><span>TK</span> Personal workspace <ChevronDown /></button><button className="drawer-new"><Plus /> New project</button><nav><button><Import /> Import</button><button><Library /> Templates</button><button><Clock3 /> Activity</button><button><Boxes /> Integrations</button><button><ShieldCheck /> Security</button></nav><p className="nav-label">Recent</p><div className="drawer-recent">{recent.map((name) => <button key={name} onClick={setWorkspace}><FolderGit2 />{name}<MoreHorizontal /></button>)}</div><div className="drawer-account"><span>TK</span><b>TK Das</b><Settings /></div></aside></div>;
+  const drawerRecent = ["hyper-copilot-sandbox", "Clone hyper copilot sandbox", "hyper-copilot-sandbox-1", "elite-veo"];
+  return <div className="drawer-backdrop" onClick={close}><aside className="mobile-drawer" onClick={(e) => e.stopPropagation()}><div className="drawer-head"><BrandMark compact /><div><Search /><PanelLeft /><button className="icon-button" onClick={close} aria-label="Close navigation"><X /></button></div></div><button className="workspace-pill"><span>TK</span> Personal workspace <ChevronDown /></button><button className="drawer-new"><Plus /> New</button><nav><button><Import /> Import</button><button><Library /> Library</button><button><Clock3 /> Routines</button><button><Layers3 /> Integrations</button><button><ShieldCheck /> Security</button></nav><p className="nav-label">Recent</p><div className="drawer-recent">{drawerRecent.map((name, index) => <button key={name} onClick={setWorkspace}>{index === 1 ? <Bot /> : <FolderGit2 />}<span>{name}</span><Pin /><MoreHorizontal /></button>)}</div><div className="model-promo"><div><b>Use smarter models</b><span>GPT-6 Astra &amp; Claude Fable</span></div><Sparkles /></div><button className="learn-more"><Lightbulb /> Learn more</button><div className="drawer-account"><span>TK</span><b>TK Das</b><Settings /></div></aside></div>;
 }
