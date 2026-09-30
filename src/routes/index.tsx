@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowUp,
   BarChart3,
@@ -124,7 +124,7 @@ function EvoAgent() {
         )}
       </div>
 
-      {drawer && <MobileDrawer close={() => setDrawer(false)} setWorkspace={() => { setWorkspace(true); setDrawer(false); }} />}
+      {drawer && <MobileDrawer close={() => setDrawer(false)} setWorkspace={() => { setWorkspace(true); setDrawer(false); }} goHome={() => { setWorkspace(false); setPrompt(""); setRunning(false); }} />}
     </div>
   );
 }
@@ -196,7 +196,52 @@ function Composer({ prompt, setPrompt, beginTask, placeholder, compact = false }
   return <div className={`composer-wrap ${compact ? "compact" : ""}`}><div className="composer"><textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={placeholder} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); beginTask(); } }} /><div className="composer-actions"><button aria-label="Attach"><Plus /></button><div className="model-select"><button className="model" onClick={() => setModelMenu(!modelMenu)} aria-haspopup="listbox" aria-expanded={modelMenu}><Zap /> {model} <ChevronDown /></button>{modelMenu && <div className="model-menu" role="listbox" aria-label="Select model">{models.map((name) => <button key={name} role="option" aria-selected={model === name} onClick={() => { setModel(name); setModelMenu(false); }}><span>{name}</span>{model === name && <span className="model-check">✓</span>}</button>)}</div>}</div><button aria-label="Voice"><Mic /></button></div></div></div>;
 }
 
-function MobileDrawer({ close, setWorkspace }: { close: () => void; setWorkspace: () => void }) {
-  const drawerRecent = ["hyper-copilot-sandbox", "Clone hyper copilot sandbox", "hyper-copilot-sandbox-1", "elite-veo"];
-  return <div className="drawer-backdrop" onClick={close}><aside className="mobile-drawer" onClick={(e) => e.stopPropagation()}><div className="drawer-head"><BrandMark compact /><div><Search /><PanelLeft /><button className="icon-button" onClick={close} aria-label="Close navigation"><X /></button></div></div><button className="workspace-pill"><span>TK</span> Personal workspace <ChevronDown /></button><button className="drawer-new"><Plus /> New</button><nav><button><Import /> Import</button><button><Library /> Library</button><button><Clock3 /> Routines</button><button><Layers3 /> Integrations</button><button><ShieldCheck /> Security</button></nav><p className="nav-label">Recent</p><div className="drawer-recent">{drawerRecent.map((name, index) => <button key={name} onClick={setWorkspace}>{index === 1 ? <Bot /> : <FolderGit2 />}<span>{name}</span><Pin /><MoreHorizontal /></button>)}</div><div className="model-promo"><div><b>Use smarter models</b><span>GPT-6 Astra &amp; Claude Fable</span></div><Sparkles /></div><button className="learn-more"><Lightbulb /> Learn more</button><div className="drawer-account"><span>TK</span><b>TK Das</b><Settings /></div></aside></div>;
+const allProjects = [
+  { name: "hyper-copilot-sandbox", chat: false },
+  { name: "Clone hyper copilot sandbox", chat: true },
+  { name: "hyper-copilot-sandbox-1", chat: false },
+  { name: "elite-veo", chat: false },
+  { name: "Stellar Dashboard", chat: false },
+  { name: "Pulse Commerce", chat: false },
+  { name: "Nexus API", chat: false },
+];
+const workspaces = ["Personal workspace", "Team workspace"];
+
+function MobileDrawer({ close, setWorkspace, goHome }: { close: () => void; setWorkspace: () => void; goHome: () => void }) {
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState(allProjects);
+  const [pinned, setPinned] = useState<string[]>([]);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [search, setSearch] = useState<string | null>(null);
+  const [ws, setWs] = useState(workspaces[0]);
+  const [wsOpen, setWsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const go = (to: "/import" | "/library" | "/integrations" | "/dashboard") => { close(); navigate({ to }); };
+  const list = projects
+    .filter((p) => !search || p.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => Number(pinned.includes(b.name)) - Number(pinned.includes(a.name)));
+  const togglePin = (name: string) => setPinned((p) => (p.includes(name) ? p.filter((n) => n !== name) : [...p, name]));
+
+  return <div className="drawer-backdrop" onClick={close}><aside className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-head"><button className="bare" onClick={() => go("/dashboard")} aria-label="Dashboard"><BrandMark compact /></button><div><button className="bare" aria-label="Search projects" onClick={() => setSearch(search === null ? "" : null)}><Search /></button><button className="bare" aria-label="Close sidebar" onClick={close}><PanelLeft /></button></div></div>
+    <div className="ws-wrap">
+      <button className="workspace-pill" onClick={() => setWsOpen(!wsOpen)} aria-expanded={wsOpen}><span>{ws === workspaces[0] ? "TK" : "TM"}</span> {ws} <ChevronDown /></button>
+      {wsOpen && <div className="drawer-menu">{workspaces.map((w) => <button key={w} onClick={() => { setWs(w); setWsOpen(false); }}>{w}{w === ws && <span className="model-check">✓</span>}</button>)}</div>}
+    </div>
+    <button className="drawer-new" onClick={() => { goHome(); close(); }}><Plus /> New</button>
+    <nav><button onClick={() => go("/library")}><Library /> Library</button><button onClick={() => go("/import")}><Import /> Import</button><button onClick={() => go("/integrations")}><Layers3 /> Integrations</button></nav>
+    <p className="nav-label">Recent</p>
+    {search !== null && <input autoFocus className="drawer-search" placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)} />}
+    <div className="drawer-recent">{list.length === 0 && <p className="drawer-empty">No projects found</p>}{list.map((p) => <div key={p.name} className="recent-row">
+      <button className="recent-open" onClick={setWorkspace}>{p.chat ? <Bot /> : <FolderGit2 />}<span>{p.name}</span></button>
+      <button className={`bare ${pinned.includes(p.name) ? "pinned" : ""}`} aria-label="Pin" onClick={() => togglePin(p.name)}><Pin /></button>
+      <button className="bare" aria-label="More" onClick={() => setMenuFor(menuFor === p.name ? null : p.name)}><MoreHorizontal /></button>
+      {menuFor === p.name && <div className="drawer-menu row-menu"><button onClick={setWorkspace}>Open</button><button onClick={() => { togglePin(p.name); setMenuFor(null); }}>{pinned.includes(p.name) ? "Unpin" : "Pin"}</button><button onClick={() => { setProjects((ps) => ps.filter((x) => x.name !== p.name)); setMenuFor(null); }}>Remove</button></div>}
+    </div>)}</div>
+    <div className="ws-wrap account-wrap">
+      {settingsOpen && <div className="drawer-menu up"><button onClick={() => setSettingsOpen(false)}>Account</button><button onClick={() => setSettingsOpen(false)}>Preferences</button><button onClick={() => { setSettingsOpen(false); close(); }}>Sign out</button></div>}
+      <div className="drawer-account"><span>TK</span><b>TK Das</b><button className="bare" aria-label="Settings" onClick={() => setSettingsOpen(!settingsOpen)}><Settings /></button></div>
+    </div>
+  </aside></div>;
 }
