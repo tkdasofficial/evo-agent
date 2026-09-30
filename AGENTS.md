@@ -11,3 +11,4 @@
 
 - Keep Evo Agent UI-only until backend workflows are explicitly requested; this preserves the PRD's current implementation phase.
 - Use a mobile-first, Replit-inspired workspace shell with semantic charcoal/amber tokens; this matches the approved product direction.
+- Use Manrope throughout, with 400 for body copy, 500 for controls, 600 for headings, and 700–800 for labels and emphasis; this preserves hierarchy with one font family.
