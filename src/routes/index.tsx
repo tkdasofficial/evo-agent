@@ -53,6 +53,12 @@ export const Route = createFileRoute("/")({
 });
 
 const recent = ["Hyper Copilot", "Stellar Dashboard", "Pulse Commerce", "Nexus API"];
+const dashboardProjects = [
+  { name: "Hyper Copilot", kind: "Agent workspace", tone: "amber" },
+  { name: "Stellar Dashboard", kind: "Analytics", tone: "blue" },
+  { name: "Pulse Commerce", kind: "Storefront", tone: "green" },
+  { name: "Nexus API", kind: "Developer tools", tone: "coral" },
+] as const;
 const tools = [
   [Globe2, "Publishing", "Publish a shareable version of your app"],
   [Database, "Database", "Store structured product and user data"],
@@ -130,10 +136,15 @@ function Home({ setWorkspace, openDrawer, prompt, setPrompt, beginTask }: { setW
         <div className="dashboard-mobile-head"><button onClick={openDrawer} aria-label="Open sidebar"><PanelLeft /></button><Lightbulb /></div>
         <div className="eyebrow"><span className="live-dot" /> SYSTEM READY <span>v1.0</span></div>
         <h1>What are we working<br />on today?</h1>
-        <section className="jump-card" onClick={() => setWorkspace(true)}>
-          <div className="jump-head"><span>Jump back in</span><ChevronRight /></div>
-          <div className="project-preview">
-            <i className="project-sheet sheet-left" /><i className="project-sheet sheet-back" /><i className="project-sheet sheet-front"><span><FolderGit2 /></span></i>
+        <section className="projects-section" aria-labelledby="projects-heading">
+          <div className="projects-head"><span id="projects-heading">Projects</span><button>Show all <ChevronRight /></button></div>
+          <div className="project-scroll">
+            {dashboardProjects.map((project) => (
+              <button className="project-card" key={project.name} onClick={() => setWorkspace(true)}>
+                <span className={`project-thumb project-thumb-${project.tone}`}><i /><i /><FolderGit2 /></span>
+                <span className="project-meta"><b>{project.name}</b><small>{project.kind}</small></span>
+              </button>
+            ))}
           </div>
         </section>
         <div className="idea-list">
@@ -178,7 +189,11 @@ function Workspace({ running, toolView, prompt, setPrompt, beginTask, setToolVie
 }
 
 function Composer({ prompt, setPrompt, beginTask, placeholder, compact = false }: { prompt: string; setPrompt: (v: string) => void; beginTask: () => void; placeholder: string; compact?: boolean }) {
-  return <div className={`composer-wrap ${compact ? "compact" : ""}`}><div className="composer"><textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={placeholder} /><div className="composer-actions"><button aria-label="Attach"><Plus /></button><button className="mode"><Sparkles /> Build <ChevronDown /></button><button className="model"><span className="model-grid" /> Evo 1 <ChevronDown /></button><button aria-label="Voice"><Mic /></button><button className="send" onClick={beginTask} disabled={!prompt.trim()} aria-label="Send"><ArrowUp /></button></div></div></div>;
+  const [model, setModel] = useState("Speed");
+  const [modelMenu, setModelMenu] = useState(false);
+  const models = ["Speed", "Flash", "Heavy"];
+
+  return <div className={`composer-wrap ${compact ? "compact" : ""}`}><div className="composer"><textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={placeholder} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); beginTask(); } }} /><div className="composer-actions"><button aria-label="Attach"><Plus /></button><div className="model-select"><button className="model" onClick={() => setModelMenu(!modelMenu)} aria-haspopup="listbox" aria-expanded={modelMenu}><Zap /> {model} <ChevronDown /></button>{modelMenu && <div className="model-menu" role="listbox" aria-label="Select model">{models.map((name) => <button key={name} role="option" aria-selected={model === name} onClick={() => { setModel(name); setModelMenu(false); }}><span>{name}</span>{model === name && <span className="model-check">✓</span>}</button>)}</div>}</div><button aria-label="Voice"><Mic /></button></div></div></div>;
 }
 
 function MobileDrawer({ close, setWorkspace }: { close: () => void; setWorkspace: () => void }) {
