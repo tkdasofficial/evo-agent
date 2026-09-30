@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowUp,
   BarChart3,
+  BookOpen,
   Bot,
   Boxes,
   BrainCircuit,
@@ -11,10 +12,12 @@ import {
   Clock3,
   Code2,
   Database,
+  ExternalLink,
   FileCode2,
   FileSpreadsheet,
   FolderGit2,
   Gauge,
+  Image,
   Globe2,
   Import,
   Layers3,
@@ -32,6 +35,7 @@ import {
   ShieldCheck,
   Sparkles,
   SquareTerminal,
+  ListChecks,
   Wrench,
   X,
   Zap,
@@ -60,10 +64,12 @@ const dashboardProjects = [
   { name: "Nexus API", kind: "Developer tools", tone: "coral" },
 ] as const;
 const tools = [
-  [Globe2, "Publishing", "Publish a shareable version of your app"],
-  [Database, "Database", "Store structured product and user data"],
-  [ShieldCheck, "Authentication", "Secure sign-in and account management"],
-  [Gauge, "Monitoring", "Inspect health, requests, and alerts"],
+  [Globe2, "Publishing", "Publish a shareable version of your app, unaffected by editor changes"],
+  [ExternalLink, "Domains", "Manage custom domains for your published project"],
+  [Gauge, "Monitoring", "View app health, request metrics, and alerts for your published app"],
+  [Sparkles, "Growth", "Find, fix, and monitor SEO and growth opportunities"],
+  [Database, "Database", "Store structured data such as profiles, scores, and product catalogs"],
+  [ShieldCheck, "Users & Auth", "Secure sign-in and account management"],
 ] as const;
 
 function BrandMark({ compact = false }: { compact?: boolean }) {
@@ -160,32 +166,69 @@ function Home({ setWorkspace, openDrawer, prompt, setPrompt, beginTask }: { setW
 }
 
 function Workspace({ running, toolView, prompt, setPrompt, beginTask, setToolView }: { running: boolean; toolView: boolean; prompt: string; setPrompt: (v: string) => void; beginTask: () => void; setToolView: (v: boolean) => void }) {
+  const [view, setView] = useState<"agent" | "tools" | "tasks">(toolView ? "tools" : "agent");
+  const [expandedActions, setExpandedActions] = useState<number | null>(null);
+  const [toolSearch, setToolSearch] = useState("");
+  const visibleTools = tools.filter(([, title, description]) => `${title} ${description}`.toLowerCase().includes(toolSearch.toLowerCase()));
+  const selectView = (next: "agent" | "tools" | "tasks") => {
+    setView(next);
+    setToolView(next === "tools");
+  };
+
   return (
     <main className="workspace-page">
       <div className="workspace-tabs">
-        <button className={!toolView ? "active" : ""} onClick={() => setToolView(false)}><Bot /> Agent</button>
-        <button className={toolView ? "active" : ""} onClick={() => setToolView(true)}><Wrench /> Tools</button>
-        <button><Clock3 /> Tasks</button>
+        <button className={view === "agent" ? "active" : ""} onClick={() => selectView("agent")} aria-label="Agent view"><Bot /><span>Hyper Copilot</span><ChevronDown /></button>
+        <button className={view === "tools" ? "active" : ""} onClick={() => selectView("tools")}><Wrench /><span>Tools</span></button>
+        <button className={view === "tasks" ? "active" : ""} onClick={() => selectView("tasks")}><ListChecks /><span>Tasks</span></button>
       </div>
-      {toolView ? (
-        <section className="tools-view"><p className="section-kicker">Evo Cloud</p><div className="tool-grid">{tools.map(([Icon, title, desc]) => <button key={title}><Icon /><div><b>{title}</b><span>{desc}</span></div><ChevronRight /></button>)}</div></section>
+      {view === "tools" ? (
+        <section className="tools-view"><p className="section-kicker">Evo Cloud</p><div className="tool-grid">{visibleTools.map(([Icon, title, desc]) => <button key={title}><Icon /><div><b>{title}</b><span>{desc}</span></div></button>)}</div>{visibleTools.length === 0 && <p className="tools-empty">No tools found</p>}</section>
+      ) : view === "tasks" ? (
+        <TasksView />
       ) : (
         <section className="agent-view">
           <div className="active-task"><div><small>Active task</small><strong>{running ? prompt : "Set up the imported project"}</strong></div><FileCode2 /><MoreHorizontal /></div>
           <div className="conversation">
-            <div className="action-row"><span><BrainCircuit /></span><span><Code2 /></span><span><SquareTerminal /></span><b>12 actions</b></div>
-            <p>I’ve mapped the project structure and identified the critical path. I’ll preserve the existing architecture, implement the requested changes, and verify each acceptance check before completion.</p>
-            <div className="action-row"><span><FileCode2 /></span><span><BrainCircuit /></span><span><Zap /></span><b>6 actions</b></div>
-            <p>The workspace is ready. The application compiles cleanly, the interface is responsive, and the next verification pass will check the mobile flow and project navigation.</p>
+            <ActionGroup count={3} icons={[SquareTerminal, Code2, BrainCircuit]} expanded={expandedActions === 0} onToggle={() => setExpandedActions(expandedActions === 0 ? null : 0)} actions={["Inspected the project structure", "Ran the application preview", "Planned the implementation"]} />
+            <p>I’ll convert your project into a polished mobile-first experience. Let me start by reading the complete structure and then building the interface.</p>
+            <ActionGroup count={6} icons={[BookOpen, BookOpen, BookOpen, BrainCircuit]} expanded={expandedActions === 1} onToggle={() => setExpandedActions(expandedActions === 1 ? null : 1)} actions={["Opened index.tsx", "Opened styles.css", "Opened workspace routes", "Opened shared components", "Opened project settings", "Generated the implementation plan"]} />
+            <p>Now I have a good understanding of the application. I’ll refine the workspace views, activity details, and mobile controls.</p>
+            <ActionGroup count={10} icons={[Image, BookOpen, BookOpen, MoreHorizontal, BrainCircuit]} expanded={expandedActions === 2} onToggle={() => setExpandedActions(expandedActions === 2 ? null : 2)} actions={["Reviewed the reference images", "Opened the workspace interface", "Opened the theme styles", "Updated mobile proportions", "Built the Tools view", "Built the Tasks view", "Added expandable activity", "Checked keyboard access", "Verified reduced motion", "Prepared the mobile preview"]} />
             <div className="work-status"><Gauge /><span>Worked for 2 minutes</span><ChevronDown /></div>
             <div className="verification"><div><ShieldCheck /><span><b>Verification in progress</b><small>4 of 5 acceptance checks passed</small></span></div><div className="verify-bar"><i /></div></div>
           </div>
         </section>
       )}
-      <Composer prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} placeholder="Make, test, iterate..." compact />
+      {view === "agent" && <Composer prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} placeholder="Make, test, iterate..." compact />}
+      {view === "tools" && <div className="tool-search"><Search /><input value={toolSearch} onChange={(event) => setToolSearch(event.target.value)} placeholder="Search tools..." aria-label="Search tools" /></div>}
+      {view === "tasks" && <button className="new-task"><Plus /><span>New task</span><b><Sparkles /> Core</b></button>}
       <div className="launch-bar"><button aria-label="Preview panels"><Layers3 /></button><button className="launch-main"><Globe2 /> Open application</button><button aria-label="Publish"><ArrowUp /></button></div>
     </main>
   );
+}
+
+type ActionIcon = typeof BookOpen;
+
+function ActionGroup({ count, icons, expanded, onToggle, actions }: { count: number; icons: ActionIcon[]; expanded: boolean; onToggle: () => void; actions: string[] }) {
+  return <div className={`action-group ${expanded ? "expanded" : ""}`}>
+    <button className="action-summary" onClick={onToggle} aria-expanded={expanded}>
+      <span className="action-icons">{icons.map((Icon, index) => <i key={index}><Icon /></i>)}</span>
+      <b>{expanded ? "Show less" : `${count} actions`}</b>
+      <ChevronDown className="action-chevron" />
+    </button>
+    <div className="action-details" aria-hidden={!expanded}>
+      <div>
+        {actions.map((action, index) => <div className="action-detail" key={action}>{index === actions.length - 1 ? <BrainCircuit /> : <BookOpen />}<span>{action}</span>{index === actions.length - 1 && <ChevronDown />}</div>)}
+      </div>
+    </div>
+  </div>;
+}
+
+function TasksView() {
+  return <section className="tasks-view">
+    {[["Ready", "No ready tasks"], ["Active", "No active tasks"], ["Draft", "No draft tasks"]].map(([title, empty]) => <div className="task-section" key={title}><h2>{title}</h2><div>{empty}</div></div>)}
+  </section>;
 }
 
 function Composer({ prompt, setPrompt, beginTask, placeholder, compact = false }: { prompt: string; setPrompt: (v: string) => void; beginTask: () => void; placeholder: string; compact?: boolean }) {
