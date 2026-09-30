@@ -234,7 +234,6 @@ function MobileDrawer({ close, setWorkspace, goHome }: { close: () => void; setW
     <button className="drawer-new" onClick={() => { goHome(); close(); }}><Plus /> New</button>
     <nav><button onClick={() => go("/library")}><Library /> Library</button><button onClick={() => go("/import")}><Import /> Import</button><button onClick={() => go("/integrations")}><Layers3 /> Integrations</button></nav>
     <p className="nav-label">Recent</p>
-    {search !== null && <input autoFocus className="drawer-search" placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)} />}
     <div className="drawer-recent">{list.length === 0 && <p className="drawer-empty">No projects found</p>}{list.map((p) => <div key={p.name} className="recent-row">
       <button className="recent-open" onClick={setWorkspace}>{p.chat ? <Bot /> : <FolderGit2 />}<span>{p.name}</span></button>
       <button className={`bare ${pinned.includes(p.name) ? "pinned" : ""}`} aria-label="Pin" onClick={() => togglePin(p.name)}><Pin /></button>
