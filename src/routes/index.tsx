@@ -114,7 +114,7 @@ function EvoAgent() {
         {workspace ? (
           <Workspace running={running} toolView={toolView} prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} setToolView={setToolView} />
         ) : (
-          <Home setWorkspace={setWorkspace} prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} />
+          <Home setWorkspace={setWorkspace} openDrawer={() => setDrawer(true)} prompt={prompt} setPrompt={setPrompt} beginTask={beginTask} />
         )}
       </div>
 
@@ -123,11 +123,11 @@ function EvoAgent() {
   );
 }
 
-function Home({ setWorkspace, prompt, setPrompt, beginTask }: { setWorkspace: (v: boolean) => void; prompt: string; setPrompt: (v: string) => void; beginTask: () => void }) {
+function Home({ setWorkspace, openDrawer, prompt, setPrompt, beginTask }: { setWorkspace: (v: boolean) => void; openDrawer: () => void; prompt: string; setPrompt: (v: string) => void; beginTask: () => void }) {
   return (
     <main className="home-page">
       <div className="home-inner">
-        <div className="dashboard-mobile-head"><button aria-label="Open sidebar"><PanelLeft /></button><Lightbulb /></div>
+        <div className="dashboard-mobile-head"><button onClick={openDrawer} aria-label="Open sidebar"><PanelLeft /></button><Lightbulb /></div>
         <div className="eyebrow"><span className="live-dot" /> SYSTEM READY <span>v1.0</span></div>
         <h1>What are we working<br />on today?</h1>
         <section className="jump-card" onClick={() => setWorkspace(true)}>
