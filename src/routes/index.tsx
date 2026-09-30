@@ -104,7 +104,7 @@ function EvoAgent() {
       </aside>
 
       <div className="main-frame">
-        <header className="topbar">
+        <header className={`topbar ${workspace ? "workspace-topbar" : "home-topbar"}`}>
           <button className="icon-button mobile-only" onClick={() => setDrawer(true)} aria-label="Open navigation"><Menu /></button>
           <div className="project-switcher"><BrandMark compact /><span>{workspace ? "Hyper Copilot" : "Evo Agent"}</span><ChevronDown /></div>
           <div className="command-search"><Search /><span>Search projects and commands</span><kbd>⌘ K</kbd></div>
